@@ -9,13 +9,19 @@ jobs:
   build:
     env:
       CI: true
+    strategy:
+      matrix:
+        node-version: [ 16.x, 18.x ]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-        name: Login to Docker Hub
+        name: Use Node.js version ${{ matrix.node-version }}
       - run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login docker.pkg.github.com -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+        name: Docker Login
       - run: docker build -t santgt5/react-test -f ./Dockerfile.dev ./
+        name: Build container
       - run: docker run -e CI=true santgt5/react-test npm run test
+        name: Run test
 
       # - run: docker build -t santgt5/multi-client-10-14 ./client
       # - run: docker build -t santgt5/multi-nginx-10-14 ./nginx
