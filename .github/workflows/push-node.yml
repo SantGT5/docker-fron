@@ -1,0 +1,58 @@
+name: Deploy MultiDocker
+on:
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    env:
+      CI: true
+    strategy:
+      matrix:
+        node-version: [16.14, 18.13]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup node version ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login docker.pkg.github.com -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+        name: Docker Login
+
+      - run: docker build -t santgt5/react-test -f ./Dockerfile.dev ./
+        name: Build container
+
+      - run: docker run -e CI=true santgt5/react-test npm run test
+        name: Run test
+
+
+      # Deploy
+      - run: docker build -t santgt5/multi-client-10-14 ./client
+      - run: docker build -t santgt5/multi-nginx-10-14 ./nginx
+      - run: docker build -t santgt5/multi-server-10-14 ./server
+      - run: docker build -t santgt5/multi-worker-10-14 ./worker
+
+      - run: docker push santgt5/multi-client-10-14
+      - run: docker push santgt5/multi-nginx-10-14
+      - run: docker push santgt5/multi-server-10-14
+      - run: docker push santgt5/multi-worker-10-14
+
+      - name: Generate deployment package
+        run: zip -r deploy.zip . -x '*.git*'
+        if: ${{ github.event_name != 'pull_request' && github.ref == 'master' }}
+
+      - name: Beanstalk Deploy
+        if: ${{ github.event_name != 'pull_request' && github.ref == 'master' }}
+        uses: einaregilsson/beanstalk-deploy@v21
+        with:
+          aws_access_key: ${{ secrets.AWS_ACCESS_KEY }}
+          aws_secret_key: ${{ secrets.AWS_SECRET_KEY }}
+          application_name: docker-fron
+          environment_name: Dockerfron-env
+          existing_bucket_name: elasticbeanstalk-eu-west-1-075759264670
+          version_label: "ver-${{ github.sha }}"
+          use_existing_version_if_available: true
+          region: eu-west-1
+          deployment_package: deploy.zip
