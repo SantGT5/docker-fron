@@ -11,18 +11,21 @@ jobs:
       CI: true
     strategy:
       matrix:
-        node-version: [ 16.14, 18.13 ]
+        node-version: [16.14, 18.13]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - name: Use Node.js version ${{ matrix.node-version }}
-        uses: actions/setup-node@v2
+      - uses: actions/checkout@v3
+      - name: Setup node version ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
+
       - run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login docker.pkg.github.com -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
         name: Docker Login
+
       - run: docker build -t santgt5/react-test -f ./Dockerfile.dev ./
         name: Build container
+
       - run: docker run -e CI=true santgt5/react-test npm run test
         name: Run test
 
