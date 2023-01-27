@@ -29,10 +29,10 @@ jobs:
 
 
       # Deploy
-      - run: docker build -t santgt5/multi-client-10-14 ./client
-      - run: docker build -t santgt5/multi-nginx-10-14 ./nginx
-      - run: docker build -t santgt5/multi-server-10-14 ./server
-      - run: docker build -t santgt5/multi-worker-10-14 ./worker
+      - run: docker build -t santgt5/multi-client-10-14 ./
+      - run: docker build -t santgt5/multi-nginx-10-14 ./
+      - run: docker build -t santgt5/multi-server-10-14 ./
+      - run: docker build -t santgt5/multi-worker-10-14 ./
 
       - run: docker push santgt5/multi-client-10-14
       - run: docker push santgt5/multi-nginx-10-14
@@ -41,10 +41,8 @@ jobs:
 
       - name: Generate deployment package
         run: zip -r deploy.zip . -x '*.git*'
-        if: ${{ github.event_name != 'pull_request' && github.ref == 'master' }}
 
       - name: Beanstalk Deploy
-        if: ${{ github.event_name != 'pull_request' && github.ref == 'master' }}
         uses: einaregilsson/beanstalk-deploy@v21
         with:
           aws_access_key: ${{ secrets.AWS_ACCESS_KEY }}
