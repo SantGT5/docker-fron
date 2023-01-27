@@ -51,5 +51,6 @@ jobs:
           environment_name: Dockerfron-env
           existing_bucket_name: elasticbeanstalk-eu-west-1-075759264670
           version_label: ${{ github.sha }}
+          use_existing_version_if_available: true
           region: eu-west-1
           deployment_package: deploy.zip
