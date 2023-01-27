@@ -28,7 +28,9 @@ jobs:
 
       - run: docker run -e CI=true santgt5/react-test npm run test
         name: Run test
+        if: github.event_name != 'pull_request'
 
+      # Deploy
       # - run: docker build -t santgt5/multi-client-10-14 ./client
       # - run: docker build -t santgt5/multi-nginx-10-14 ./nginx
       # - run: docker build -t santgt5/multi-server-10-14 ./server
@@ -42,14 +44,15 @@ jobs:
       # - name: Generate deployment package
       #   run: zip -r deploy.zip . -x '*.git*'
 
-      # - name: Deploy to EB
-      #   uses: einaregilsson/beanstalk-deploy@v18
+      # - name: Beanstalk Deploy
+      #   uses: einaregilsson/beanstalk-deploy@v21
       #   with:
       #     aws_access_key: ${{ secrets.AWS_ACCESS_KEY }}
       #     aws_secret_key: ${{ secrets.AWS_SECRET_KEY }}
-      #     application_name: multi-gh
-      #     environment_name: Multigh-env
-      #     existing_bucket_name: elasticbeanstalk-us-east-1-923445559289
-      #     region: us-east-1
-      #     version_label: ${{ github.sha }}
+      #     application_name: docker-fron
+      #     environment_name: Dockerfron-env
+      #     existing_bucket_name: elasticbeanstalk-eu-west-1-075759264670
+      #     version_label: "ver-${{ github.sha }}"
+      #     use_existing_version_if_available: true
+      #     region: eu-west-1
       #     deployment_package: deploy.zip
