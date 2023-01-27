@@ -19,16 +19,18 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
-        if: ${{ github.event_name != 'pull_request' }}
 
       - run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login docker.pkg.github.com -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
         name: Docker Login
+        if: ${{ github.event_name != 'pull_request' }}
 
       - run: docker build -t santgt5/react-test -f ./Dockerfile.dev ./
         name: Build container
+        if: ${{ github.event_name != 'pull_request' }}
 
       - run: docker run -e CI=true santgt5/react-test npm run test
         name: Run test
+        if: ${{ github.event_name != 'pull_request' }}
 
       # Deploy
       # - run: docker build -t santgt5/multi-client-10-14 ./client
