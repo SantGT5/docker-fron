@@ -4,7 +4,7 @@ on:
     branches: [main]
 
 jobs:
-  test:
+  build:
     env:
       CI: true
     strategy:
@@ -27,15 +27,6 @@ jobs:
       - name: Run test
         run: docker run -e CI=true santgt5/react-test npm run test
 
-  deploy:
-    needs: [test]
-    env:
-      CI: true
-    strategy:
-      matrix:
-        node-version: [18.13]
-    runs-on: ubuntu-latest
-    steps:
       - name: Build image
         run: docker build -t santgt5/multi-nginx-10-14 ./
       - name: Push image
@@ -57,10 +48,3 @@ jobs:
           region: eu-west-1
           wait_for_deployment: true
           deployment_package: deploy.zip
-  
-  success:
-    needs: [deploy]
-    runs-on: ubuntu-latest
-    steps:
-      - run: echo "Success"
-
