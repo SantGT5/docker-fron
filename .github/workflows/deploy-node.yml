@@ -4,12 +4,12 @@ on:
     branches: [main]
 
 jobs:
-  build:
+  test:
     env:
       CI: true
     strategy:
       matrix:
-        node-version: [16.14, 18.13]
+        node-version: [18.13]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -27,8 +27,15 @@ jobs:
       - name: Run test
         run: docker run -e CI=true santgt5/react-test npm run test
 
-
-      # Deploy
+  deploy:
+    needs: [test]
+    env:
+      CI: true
+    strategy:
+      matrix:
+        node-version: [18.13]
+    runs-on: ubuntu-latest
+    steps:
       - name: Build image
         run: docker build -t santgt5/multi-nginx-10-14 ./
       - name: Push image
@@ -48,4 +55,12 @@ jobs:
           version_label: ${{ github.sha }}
           use_existing_version_if_available: true
           region: eu-west-1
+          wait_for_deployment: true
           deployment_package: deploy.zip
+  
+  success:
+    needs: [deploy]
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Success"
+
